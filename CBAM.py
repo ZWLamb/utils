@@ -16,13 +16,10 @@ class CBAM(nn.Module):
 
     def forward(self, f):
         chan_att = self.channel_attention(f)
-        # print(chan_att.size())
         fp = chan_att * f
-        # print(fp.size())
         spat_att = self.spatial_attention(fp)
-        # print(spat_att.size())
         fpp = spat_att * fp
-        # print(fpp.size())
+
         return fpp
 
 
@@ -34,14 +31,14 @@ class SpatialAttention(nn.Module):
         assert kernel_size % 2 == 1, "Odd kernel size required"
         self.conv = nn.Conv2d(in_channels=2, out_channels=1, kernel_size=kernel_size,
                               padding=int((kernel_size - 1) / 2))
-        # batchnorm
+
 
     def forward(self, x):
         max_pool = self.agg_channel(x, "max")
         avg_pool = self.agg_channel(x, "avg")
         pool = torch.cat([max_pool, avg_pool], dim=1)
         conv = self.conv(pool)
-        # batchnorm ????????????????????????????????????????????
+
         conv = conv.repeat(1, x.size()[1], 1, 1)
         att = torch.sigmoid(conv)
         return att
@@ -93,21 +90,14 @@ class ChannelAttention(nn.Module):
 
 
 def main():
-    # ca = CBAM()
+    f = torch.rand(1,3,5,5)
+    print("IN_SIZE:",f.size())
 
-    f = torch.r
-
-    print(f.size())
-
-    # sa = SpatialAttention(kernel_size = 3)
-    # sa(f)
     cbam = CBAM(n_channels_in=f.size()[1], reduction_ratio=2, kernel_size=3)
 
     fpp = cbam(f)
-    print(fpp.size())
-    print(fpp)
-    # print(f)
-    # print(fp)
+    print("OUT_SIZE:",fpp.size())
+    print("OUT:",fpp)
 
 if __name__ == "__main__":
     main()
